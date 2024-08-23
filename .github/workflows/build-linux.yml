@@ -33,7 +33,7 @@ jobs:
         ./build.sh -r
         mkdir linuxbuild
         cp build/$PROJECT/$PROJECT linuxbuild/
-        mv build/$PROJECT/asset linuxbuild/
+        mv build/$PROJECT/assets linuxbuild/
         cp LICENSE linuxbuild/
         cp LICENSE linuxbuild/
         cp LICENSES.md linuxbuild/
