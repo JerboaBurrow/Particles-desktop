@@ -28,7 +28,7 @@ jobs:
         ./build.sh -r
         mkdir linuxbuild
         cp build/$PROJECT/$PROJECT linuxbuild/
-        mv build/$PROJECT/res linuxbuild/
+        mv build/$PROJECT/assets linuxbuild/
         cp LICENSE linuxbuild/
         cp LICENSES.md linuxbuild/
         cp README.md linuxbuild/
@@ -70,7 +70,7 @@ jobs:
         ./build.sh -r -w
         mkdir windowsbuild
         cp build/$PROJECT/$PROJECT.exe windowsbuild/
-        mv build/$PROJECT/res windowsbuild/
+        mv build/$PROJECT/assets windowsbuild/
         cp build/libwinpthread* windowsbuild/
         cp LICENSE windowsbuild/
         cp LICENSES.md windowsbuild/
@@ -121,7 +121,7 @@ jobs:
         ./build.sh -r -o
         mkdir macosbuild
         cp build/$PROJECT/$PROJECT macosbuild/
-        mv build/$PROJECT/res macosbuild/
+        mv build/$PROJECT/assets macosbuild/
 
     - name: sign build
       run: |
@@ -144,7 +144,7 @@ jobs:
         mkdir $PROJECT.app/Contents/Resources
         mkdir $PROJECT.app/Contents/MacOS
         cp macosbuild/$PROJECT $PROJECT.app/Contents/MacOS
-        cp -r macosbuild/res $PROJECT.app/Contents/Resources
+        cp -r macosbuild/assets $PROJECT.app/Contents/Resources
         cp macosbuild/*.sig $PROJECT.app/Contents/Resources
         cp macosbuild/*.md5 $PROJECT.app/Contents/Resources
         cp LICENSE $PROJECT.app/Contents/Resources
@@ -188,7 +188,7 @@ jobs:
           mkdir $PROJECT-linux-x86_64
           cp $PROJECT.* $PROJECT-linux-x86_64/
           cp $PROJECT $PROJECT-linux-x86_64/
-          cp -r res $PROJECT-linux-x86_64/
+          cp -r assets $PROJECT-linux-x86_64/
           cp LICENSE* $PROJECT-linux-x86_64/
           cp README.md $PROJECT-linux-x86_64/
           chmod +x $PROJECT-linux-x86_64/$PROJECT
@@ -205,7 +205,7 @@ jobs:
           cp $PROJECT.exe $PROJECT-windows/
           cp $PROJECT.exe.* $PROJECT-windows/
           cp *.dll $PROJECT-windows/
-          cp -r res $PROJECT-windows/
+          cp -r assets $PROJECT-windows/
           cp LICENSE* $PROJECT-windows/
           cp README.md $PROJECT-windows/
           cd $PROJECT-windows && zip -r ../$PROJECT-windows.zip . && cd ..

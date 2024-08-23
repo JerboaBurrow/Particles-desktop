@@ -42,7 +42,7 @@ jobs:
         ./build.sh -r -o
         mkdir macosbuild
         cp build/$PROJECT/$PROJECT macosbuild/
-        mv build/$PROJECT/res macosbuild/
+        mv build/$PROJECT/assets macosbuild/
 
     - name: sign build
       run: |
@@ -65,7 +65,7 @@ jobs:
         mkdir $PROJECT.app/Contents/Resources
         mkdir $PROJECT.app/Contents/MacOS
         cp macosbuild/$PROJECT $PROJECT.app/Contents/MacOS
-        cp -r macosbuild/res $PROJECT.app/Contents/Resources
+        cp -r macosbuild/assets $PROJECT.app/Contents/Resources
         cp macosbuild/*.sig $PROJECT.app/Contents/Resources
         cp macosbuild/*.md5 $PROJECT.app/Contents/Resources
         cp LICENSE $PROJECT.app/Contents/Resources

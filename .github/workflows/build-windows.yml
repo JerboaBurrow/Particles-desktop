@@ -34,7 +34,7 @@ jobs:
         ./build.sh -r -w
         mkdir windowsbuild
         cp build/$PROJECT/$PROJECT.exe windowsbuild/
-        mv build/$PROJECT/res windowsbuild/
+        mv build/$PROJECT/assets windowsbuild/
         cp build/*.dll windowsbuild/
         cp LICENSE windowsbuild/
         cp LICENSES.md windowsbuild/
