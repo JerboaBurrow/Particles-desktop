@@ -32,12 +32,9 @@ jobs:
         tag="v$PRODUCT-$MAJOR.$MINOR.$PATCH"
         echo $tag
 
-        wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-android.zip
-        ./butler push $PROJECT-android.zip $ITCHIO_PROJECT:android --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
-
         wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-windows.zip
         ./butler push $PROJECT-windows.zip $ITCHIO_PROJECT:windows --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
-        
+
         mkdir linux
         wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-linux-x86_64.tar.xz
         tar -xvJf $PROJECT-linux-x86_64.tar.xz -C linux
@@ -49,4 +46,3 @@ jobs:
         tar -xvJf $PROJECT-macOS.tar.xz -C macos
         cd macos && zip -r ../$PROJECT-macOS.zip . && cd ..
         ./butler push $PROJECT-macOS.zip $ITCHIO_PROJECT:macOS --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
-        

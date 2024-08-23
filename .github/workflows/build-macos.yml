@@ -31,7 +31,7 @@ jobs:
           ls ~/vulkan
           cd ~/vulkan/
           python install_vulkan.py
-          brew install md5sha1sum svg2png 
+          brew install md5sha1sum svg2png
 
     - name: get hop
       run: ./getLibs.sh
@@ -46,7 +46,7 @@ jobs:
 
     - name: sign build
       run: |
-        export GPG_TTY=$(tty)  
+        export GPG_TTY=$(tty)
         echo "${{ secrets.GPG_KEY }}" > priv
         gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
         rm priv
@@ -55,7 +55,7 @@ jobs:
         md5sum $PROJECT > $PROJECT.md5
 
         gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT
-        cd 
+        cd
 
     - name: create .app bundle
       run: |

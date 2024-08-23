@@ -41,7 +41,7 @@ jobs:
 
     - name: sign build
       run: |
-        export GPG_TTY=$(tty)  
+        export GPG_TTY=$(tty)
         echo "${{ secrets.GPG_KEY }}" > priv
         gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
         rm priv
