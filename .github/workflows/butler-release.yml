@@ -1,9 +1,9 @@
 name: Butler release
 
 env:
-  SLUG: Jerboa
-  PROJECT: Jerboa
-  ITCHIO_PROJECT: Jerboa
+  SLUG: Particles
+  PROJECT: Particles
+  ITCHIO_PROJECT: Particles
 
 on:
   workflow_dispatch:

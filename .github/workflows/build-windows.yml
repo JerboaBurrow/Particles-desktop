@@ -1,7 +1,7 @@
 name: Windows build
 
 env:
-  PROJECT: Jerboa
+  PROJECT: Particles
 
 on:
   push:
