@@ -1,0 +1,52 @@
+name: Butler release
+
+env:
+  SLUG: Jerboa
+  PROJECT: Jerboa
+  ITCHIO_PROJECT: Jerboa
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  butlerPush:
+    runs-on: ubuntu-20.04
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+        unzip butler.zip
+        chmod +x butler
+        ./butler -v
+
+    - name: Check versions
+      env:
+            BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      run: |
+        source version.sh
+        tag="v$PRODUCT-$MAJOR.$MINOR.$PATCH"
+        echo $tag
+
+        wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-android.zip
+        ./butler push $PROJECT-android.zip $ITCHIO_PROJECT:android --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
+
+        wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-windows.zip
+        ./butler push $PROJECT-windows.zip $ITCHIO_PROJECT:windows --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
+        
+        mkdir linux
+        wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-linux-x86_64.tar.xz
+        tar -xvJf $PROJECT-linux-x86_64.tar.xz -C linux
+        cd linux && zip -r ../$PROJECT-linux-x86_64.zip . && cd ..
+        ./butler push $PROJECT-linux-x86_64.zip $ITCHIO_PROJECT:linux --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
+
+        mkdir macos
+        wget https://github.com/JerboaBurrow/$SLUG/releases/download/$tag/$PROJECT-macOS.tar.xz
+        tar -xvJf $PROJECT-macOS.tar.xz -C macos
+        cd macos && zip -r ../$PROJECT-macOS.zip . && cd ..
+        ./butler push $PROJECT-macOS.zip $ITCHIO_PROJECT:macOS --userversion $PRODUCT-$MAJOR.$MINOR.$PATCH
+        

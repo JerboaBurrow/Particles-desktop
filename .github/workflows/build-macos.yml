@@ -1,0 +1,93 @@
+name: macOS build
+
+env:
+  PROJECT: Jerboa
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'doc/**'
+      - '.github/**'
+      - '*.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  macosNative:
+    runs-on: macos-12
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+          wget https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.dmg
+          hdiutil attach vulkan-sdk.dmg -mountpoint /Volumes/vulkan-sdk
+          mkdir ~/vulkan
+          cd /Volumes/vulkan-sdk/
+          sudo ./InstallVulkan.app/Contents/macOS/InstallVulkan --root ~/vulkan --accept-licenses --default-answer --confirm-command install
+          ls ~/vulkan
+          cd ~/vulkan/
+          python install_vulkan.py
+          brew install md5sha1sum svg2png 
+
+    - name: get hop
+      run: ./getLibs.sh
+
+    - name: macos native build
+      run: |
+        source version.sh
+        ./build.sh -r -o
+        mkdir macosbuild
+        cp build/$PROJECT/$PROJECT macosbuild/
+        mv build/$PROJECT/res macosbuild/
+
+    - name: sign build
+      run: |
+        export GPG_TTY=$(tty)  
+        echo "${{ secrets.GPG_KEY }}" > priv
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" --import priv
+        rm priv
+
+        cd macosbuild
+        md5sum $PROJECT > $PROJECT.md5
+
+        gpg --pinentry-mode=loopback --passphrase "${{ secrets.GPG_PASS }}" -b $PROJECT
+        cd 
+
+    - name: create .app bundle
+      run: |
+        source version.sh
+        mkdir $PROJECT.app
+        mkdir $PROJECT.app/Contents
+        mkdir $PROJECT.app/Contents/Resources
+        mkdir $PROJECT.app/Contents/MacOS
+        cp macosbuild/$PROJECT $PROJECT.app/Contents/MacOS
+        cp -r macosbuild/res $PROJECT.app/Contents/Resources
+        cp macosbuild/*.sig $PROJECT.app/Contents/Resources
+        cp macosbuild/*.md5 $PROJECT.app/Contents/Resources
+        cp LICENSE $PROJECT.app/Contents/Resources
+        cp LICENSES.md $PROJECT.app/Contents/Resources
+        cp README.md $PROJECT.app/Contents/Resources
+
+        cp common/macos/icon.icns $PROJECT.app/Contents/Resources/icons.icns
+        cp common/macos/Info.plist $PROJECT.app/Contents/
+
+        source common/replace.sh $PROJECT.app/Contents/Info.plist INFO_STRING "$PROJECT (C) Jerboa - GPLv3"
+        source common/replace.sh $PROJECT.app/Contents/Info.plist EXE $PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist ID app.jerboa.$PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist NAME $PROJECT
+        source common/replace.sh $PROJECT.app/Contents/Info.plist VERSION "$PRODUCT-$MAJOR.$MINOR.$PATCH"
+        rm $PROJECT.app/Contents/Info.plist-e
+
+        mkdir pkg
+        cp -r $PROJECT.app pkg/
+        cd
+
+    - name: buildArtifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PROJECT }}-macos
+        path: pkg
