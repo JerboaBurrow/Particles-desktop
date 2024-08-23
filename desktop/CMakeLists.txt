@@ -14,7 +14,7 @@ if (WINDOWS)
     endif ()
 elseif(OSX)
     set(LIB_HOP "${PROJECT_SOURCE_DIR}/common/macos/libHop-macos.a")
-    set(LIB_JGL "${PROJECT_SOURCE_DIR}/common/macos/libjGL-macos.a")   
+    set(LIB_JGL "${PROJECT_SOURCE_DIR}/common/macos/libjGL-macos.a")
     add_compile_definitions(APPLE)
 else ()
     add_link_options(-no-pie)
@@ -29,12 +29,12 @@ if (PROFILE)
     add_link_options("-Wl,--no-as-needed,-lprofiler,--as-needed")
 endif()
 
-add_executable(${OUTPUT_NAME} 
-    "src/main.cpp" 
-    "${PROJECT_SOURCE_DIR}/common/common.cpp"
+add_executable(${OUTPUT_NAME}
+    "src/main.cpp"
 )
 
 target_compile_definitions(${OUTPUT_NAME} PUBLIC GLSL_VERSION="330")
+target_compile_definitions(${OUTPUT_NAME} PUBLIC MAX_SPRITE_BATCH_BOUND_TEXTURES=4)
 
 find_package(ZLIB REQUIRED)
 if(NOT WINDOWS)
@@ -46,10 +46,10 @@ find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(X11 REQUIRED)
 
-target_link_libraries(${OUTPUT_NAME} 
+target_link_libraries(${OUTPUT_NAME}
     ${LIB_JGL}
     ${X11_LIBRARIES}
-    ${OPENGL_LIBRARIES} 
+    ${OPENGL_LIBRARIES}
     ${Vulkan_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${LIB_HOP}
@@ -57,7 +57,7 @@ target_link_libraries(${OUTPUT_NAME}
 )
 
 if(NOT WINDOWS)
-    target_link_libraries(${OUTPUT_NAME} 
+    target_link_libraries(${OUTPUT_NAME}
         ${PNG_LIBRARIES}
     )
 endif()
@@ -65,7 +65,7 @@ endif()
 target_include_directories(
 	${OUTPUT_NAME}
 	PUBLIC
-	${Vulkan_INCLUDE_DIR} 
+	${Vulkan_INCLUDE_DIR}
 )
 
 if (OSX)
@@ -79,8 +79,7 @@ endif ()
 
 set_target_properties(${OUTPUT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${OUTPUT_NAME}")
 
-file(GLOB RES "${PROJECT_SOURCE_DIR}/common/res/*")
-file(COPY ${RES} DESTINATION "${CMAKE_BINARY_DIR}/${OUTPUT_NAME}/res")
+file(COPY "${PROJECT_SOURCE_DIR}/common/assets" DESTINATION "${CMAKE_BINARY_DIR}/${OUTPUT_NAME}/assets")
 
 if (WINDOWS)
     file(GLOB DLL "${PROJECT_SOURCE_DIR}/common/windows/*.dll")

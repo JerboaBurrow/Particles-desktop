@@ -22,11 +22,6 @@ while [[ $# -gt 0 ]]; do
       RELEASE=1
       shift
       ;;
-    --android)
-      ANDROID_NDK=$2
-      shift
-      shift
-      ;;
     --vk)
       VK_SDK=$2
       shift
@@ -45,13 +40,13 @@ while [[ $# -gt 0 ]]; do
       exit 1
       ;;
     *)
-      POSITIONAL_ARGS+=("$1") 
-      shift 
+      POSITIONAL_ARGS+=("$1")
+      shift
       ;;
   esac
 done
 
-if [[ $CLEAN -eq 1 ]]; 
+if [[ $CLEAN -eq 1 ]];
 then
   if [ -d build ];
   then
@@ -62,10 +57,10 @@ then
   STATUS=0
 
   if [[ $WINDOWS -eq 0 ]];
-  then 
+  then
     export VULKAN_SDK=$VK_SDK/Windows
     export VULKAN_LIBRARY="$VK_SDK/Windows/Lib"
-    export VULKAN_INCLUDE_DIR="$VK_SDK/Windows/Include" 
+    export VULKAN_INCLUDE_DIR="$VK_SDK/Windows/Include"
 
     if [ ! -f "$VK_SDK/Windows/Lib" ]; then ln -s "$VK_SDK/Windows/Lib" "$VK_SDK/Windows/lib"; fi
     if [ ! -f "$VK_SDK/Include" ]; then ln -s "$VK_SDK/Include" "$VK_SDK/Windows/Include"; fi
@@ -88,8 +83,8 @@ then
     STATUS=$?
     cd ..
   fi
-else 
-  cd build && make -j 4 
+else
+  cd build && make -j 4
   STATUS=$?
   cd ..
 fi

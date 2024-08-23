@@ -1,5 +1,23 @@
 #include <desktop.h>
 
+std::string fixedLengthNumber(double x, unsigned length)
+{
+    std::string d = std::to_string(x);
+    std::string dtrunc(length,' ');
+    for (unsigned c = 0; c < dtrunc.length(); c++)
+    {
+        if (c >= d.length())
+        {
+            dtrunc[c] = '0';
+        }
+        else
+        {
+            dtrunc[c] = d[c];
+        }
+    }
+    return dtrunc;
+}
+
 int main(int argv, char ** argc)
 {
 
@@ -10,46 +28,83 @@ int main(int argv, char ** argc)
     conf.COCOA_RETINA = true;
     #endif
 
-    jGL::DesktopDisplay display(glm::ivec2(resX, resY), "Sprite", conf);
+    jGL::DesktopDisplay display(glm::ivec2(resX, resY), "Particles", conf);
+    display.setFrameLimit(60);
 
     glewInit();
 
-    jGLInstance = std::move(std::make_unique<jGL::GL::OpenGLInstance>(display.getRes()));
+    jGLInstance = std::move(std::make_shared<jGL::GL::OpenGLInstance>(display.getRes()));
 
     jGL::OrthoCam camera(resX, resY, glm::vec2(0.0,0.0));
 
+    jGLInstance->setTextProjection(glm::ortho(0.0,double(resX),0.0,double(resY)));
+    #ifndef MACOS
+    jGLInstance->setMSAA(8);
+    #else
+    jGLInstance->setMSAA(1);
+    #endif
+
     camera.setPosition(0.0f, 0.0f);
+
+    EntityComponentSystem manager;
 
     jLog::Log log;
 
+    Hop::Console console(log);
+
+    std::unique_ptr<AbstractWorld> world;
+
+    Hop::World::FiniteBoundary<double> mapBounds(0,0,16,16);
+    Hop::World::FixedSource mapSource;
+
+    world = std::make_unique<TileWorld>
+    (
+        2,
+        &camera,
+        16,
+        1,
+        &mapSource,
+        &mapBounds
+    );
+
+    sRender & rendering = manager.getSystem<sRender>();
+    auto assets = std::make_shared<Hop::Util::Assets::TextureAssetStore>(
+        std::filesystem::path("assets"), jGLInstance
+    );
+    auto spriteRenderer = jGLInstance->createSpriteRenderer(8);
+    rendering.setSpriteRenderer(spriteRenderer);
+    rendering.setTextureAssetStore(assets);
+
+    // setup physics system
+    sPhysics & physics = manager.getSystem<sPhysics>();
+    physics.setTimeStep(deltaPhysics);
+    physics.setGravity(0.0, 0.0, -1.0);
+
+    sCollision & collisions = manager.getSystem<sCollision>();
+
+    auto det = std::make_unique<Hop::System::Physics::CellList>(1);
+    auto res = std::make_unique<Hop::System::Physics::SpringDashpot>
+    (
+        deltaPhysics*10.0,
+        0.66,
+        0.0
+    );
+    collisions.setDetector(std::move(det));
+    collisions.setResolver(std::move(res));
+
+    Hop::LuaExtraSpace luaStore;
+
+    luaStore.ecs = &manager;
+    luaStore.world = world.get();
+    luaStore.physics = &physics;
+    luaStore.resolver = &collisions;
+
+    console.luaStore(&luaStore);
+    std::string status = console.luaStatus();
+    if (status != "LUA_OK") { WARN(status) >> log; }
+
     high_resolution_clock::time_point tic, tock;
-    double rdt = 0.0;
-
-    jGLInstance->setTextProjection(glm::ortho(0.0,double(resX),0.0,double(resY)));
-    jGLInstance->setMSAA(1);
-
-    std::shared_ptr<jGL::Texture> heart = jGLInstance->createTexture
-    (
-        "res/HEART.png",
-        jGL::Texture::Type::RGBA
-    );
-
-    std::shared_ptr<jGL::SpriteRenderer> sprites = jGLInstance->createSpriteRenderer(1);
-
-    sprites->setProjection(camera.getVP());
-
-    sprites->add
-    (
-        {
-            jGL::Transform(0.5f, 0.5f, 0.0f, 0.1f),
-            jGL::TextureOffset(0.0f, 0.0f),
-            heart
-        },
-        "sHeart"
-    );
-
     double delta = 0.0;
-    float theta = 0.0f;
 
     while (display.isOpen())
     {
@@ -58,12 +113,6 @@ int main(int argv, char ** argc)
         jGLInstance->beginFrame();
 
             jGLInstance->clear();
-
-            theta += 1.0/60.0 * 0.1;
-
-            sprites->getSprite("sHeart").update(jGL::Transform(0.5f, 0.5f, theta, 0.1f));
-
-            sprites->draw();
 
             delta = 0.0;
             for (int n = 0; n < 60; n++)
@@ -80,8 +129,6 @@ int main(int argv, char ** argc)
             debugText << "Delta: " << fixedLengthNumber(delta,6)
                     << " ( FPS: " << fixedLengthNumber(1.0/delta,4)
                     << ")\n"
-                    << "Render draw time: \n"
-                    << "   " << fixedLengthNumber(rdt, 6) << "\n"
                     << "Mouse (" << fixedLengthNumber(mouseX,4)
                     << ","
                     << fixedLengthNumber(mouseY,4)
